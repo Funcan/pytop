@@ -1,12 +1,14 @@
 import random
 import time
 import curses
+import sys
 
 
 class PyTop(object):
     def __init__(self, title, datasource):
         self.title = title
         self.stat_sources = []
+        self.refresh = 5000 # 5 seconds
         self.running = True
 
     def run(self):
@@ -26,13 +28,25 @@ class PyTop(object):
 
             data_win = screen.subwin(y - stats_win_height, x,
                                      stats_win_height, 0)
+            data_win_y = y - stats_win_height
+            data_win_x = x
             data_win.box()
-            data_win.addstr(1, 1, "Hello")
-            data_win_y, data_win_x = data_win.getyx()
+            data = self.datasource()
+            column_width = (x - 4) / len(data[0].keys())
+            for i, heading in enumerate(data[0].keys()):
+                data_win.addstr(1, i * column_width + 1, str(heading))
 
-            screen.refresh()
+            rows = min(data_win_y-2, len(data))
+            for row in xrange(0, rows):
+                for i, column in enumerate(data[0].keys()):
+                    data_win.addstr(2 + row, i * column_width + 1,
+                                    str(data[row][column]))
 
+            self.screen.refresh()
+
+            self.screen.timeout(self.refresh)
             self._keyscan()
+
 
     def _keyscan(self):
         key = self.screen.getch()
@@ -47,11 +61,30 @@ class PyTop(object):
                 return source()
         self.stat_sources.append(wrapper)
 
-def dummy_stat_source():
-    return "SomeKey", random.randint(1, 5)
+    def set_data_source(self, source):
+        self.datasource = source
+
+
+def dummy_stat_source(name):
+    return name, random.randint(1, 5)
+
+def dummy_data_source():
+    rows = random.randint(2,30)
+    ret = []
+    for i in xrange(0,rows):
+        item = {}
+        item['name'] = random.choice(['something', 'something else', 'a thing',
+                                      'some other thing', 'placeholder'])
+        item['age'] = random.randint(1, 10)
+        item['notes'] = random.choice([None, 'alive', ''])
+        ret.append(item)
+    return ret
+
 
 if __name__ == "__main__":
 	top = PyTop("Test TOP", None)
-	top.add_stat_source(dummy_stat_source)
+        top.add_stat_source(dummy_stat_source, "foo")
+        top.add_stat_source(dummy_stat_source, "bar")
+        top.add_stat_source(dummy_stat_source, "baz")
+        top.set_data_source(dummy_data_source)
         top.run()
-

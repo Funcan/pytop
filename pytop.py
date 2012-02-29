@@ -5,10 +5,11 @@ import sys
 
 
 class PyTop(object):
-    def __init__(self, title, datasource):
+    def __init__(self, title):
         self.title = title
         self.stat_sources = []
         self.refresh = 5000 # 5 seconds
+        self.datasource = None
         self.running = True
 
     def run(self):
@@ -24,23 +25,24 @@ class PyTop(object):
             stats_win.addstr(0, (x/2)-(len(self.title)/2), str(self.title))
             for i, stat_source in enumerate(self.stat_sources):
                 label, value = stat_source()
-                stats_win.addstr(i + 1, 1, str(label) + ' ' + str(value)) 
+                stats_win.addstr(i + 1, 1, str(label) + ' ' + str(value))
 
             data_win = screen.subwin(y - stats_win_height, x,
                                      stats_win_height, 0)
             data_win_y = y - stats_win_height
             data_win_x = x
             data_win.box()
-            data = self.datasource()
-            column_width = (x - 4) / len(data[0].keys())
-            for i, heading in enumerate(data[0].keys()):
-                data_win.addstr(1, i * column_width + 1, str(heading))
+            if self.datasource:
+                data = self.datasource()
+                column_width = (x - 4) / len(data[0].keys())
+                for i, heading in enumerate(data[0].keys()):
+                    data_win.addstr(1, i * column_width + 1, str(heading))
 
-            rows = min(data_win_y-2, len(data))
-            for row in xrange(0, rows):
-                for i, column in enumerate(data[0].keys()):
-                    data_win.addstr(2 + row, i * column_width + 1,
-                                    str(data[row][column]))
+                rows = min(data_win_y-2, len(data))
+                for row in xrange(0, rows):
+                    for i, column in enumerate(data[0].keys()):
+                        data_win.addstr(2 + row, i * column_width + 1,
+                                        str(data[row][column]))
 
             self.screen.refresh()
 
@@ -61,8 +63,13 @@ class PyTop(object):
                 return source()
         self.stat_sources.append(wrapper)
 
-    def set_data_source(self, source):
-        self.datasource = source
+    def set_data_source(self, source, data=None):
+        def wrapper():
+            if data:
+            	return source(data)
+            else:
+            	return source()
+        self.datasource = wrapper
 
 
 def dummy_stat_source(name):
@@ -82,7 +89,7 @@ def dummy_data_source():
 
 
 if __name__ == "__main__":
-    top = PyTop("Test TOP", None)
+    top = PyTop("Test TOP")
     top.add_stat_source(dummy_stat_source, "foo")
     top.add_stat_source(dummy_stat_source, "bar")
     top.add_stat_source(dummy_stat_source, "baz")

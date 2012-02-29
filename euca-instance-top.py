@@ -17,8 +17,8 @@ def get_instance_data(euca):
     		item = {}
     		item['name'] = instance.displayDescription
     		item['id'] = instance.id
-    		item['ip'] = instance.ip_address
-    		item['public ip'] = instance.private_ip_address
+    		item['public_ip'] = instance.ip_address
+    		item['ip'] = instance.private_ip_address
     		item['state'] = instance.state
     		ret.append(item)
     return ret

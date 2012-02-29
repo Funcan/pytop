@@ -82,9 +82,9 @@ def dummy_data_source():
 
 
 if __name__ == "__main__":
-	top = PyTop("Test TOP", None)
-        top.add_stat_source(dummy_stat_source, "foo")
-        top.add_stat_source(dummy_stat_source, "bar")
-        top.add_stat_source(dummy_stat_source, "baz")
-        top.set_data_source(dummy_data_source)
-        top.run()
+    top = PyTop("Test TOP", None)
+    top.add_stat_source(dummy_stat_source, "foo")
+    top.add_stat_source(dummy_stat_source, "bar")
+    top.add_stat_source(dummy_stat_source, "baz")
+    top.set_data_source(dummy_data_source)
+    top.run()
